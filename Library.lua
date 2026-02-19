@@ -718,6 +718,93 @@ function Library:Create(config)
 		return TabFunctions
 	end
 	
+		function Window:Notify(title, subtitle, duration)
+		title = title or "Notification"
+		subtitle = subtitle or "Action completed."
+		duration = duration or 3
+
+		-- Create a container for notifications if it doesn't exist
+		local NotifyContainer = ScreenGui:FindFirstChild("NotifyContainer")
+		if not NotifyContainer then
+			NotifyContainer = Utility:Create("Frame", {
+				Name = "NotifyContainer",
+				Parent = ScreenGui,
+				BackgroundTransparency = 1,
+				Position = UDim2.new(1, -320, 1, -20),
+				Size = UDim2.new(0, 300, 1, 0),
+				AnchorPoint = Vector2.new(0, 1)
+			})
+			
+			Utility:Create("UIListLayout", {
+				Parent = NotifyContainer,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 10),
+				VerticalAlignment = Enum.VerticalAlignment.Bottom
+			})
+		end
+
+		-- Invisible holder to allow smooth horizontal sliding inside a UIListLayout
+		local Holder = Utility:Create("Frame", {
+			Parent = NotifyContainer,
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 60)
+		})
+
+		local NotifFrame = Utility:Create("Frame", {
+			Parent = Holder,
+			BackgroundColor3 = Theme.Sidebar,
+			Size = UDim2.new(1, 0, 1, 0),
+			Position = UDim2.new(1, 50, 0, 0), -- Starts off-screen to the right
+		})
+
+		Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = NotifFrame})
+		Utility:Create("UIStroke", {Parent = NotifFrame, Color = Theme.Outline, Thickness = 1})
+
+		-- Purple accent line on the left
+		local AccentLine = Utility:Create("Frame", {
+			Parent = NotifFrame,
+			BackgroundColor3 = Theme.Accent,
+			Size = UDim2.new(0, 3, 1, 0),
+			BorderSizePixel = 0
+		})
+		Utility:Create("UICorner", {CornerRadius = UDim.new(0, 6), Parent = AccentLine})
+
+		Utility:Create("TextLabel", {
+			Parent = NotifFrame,
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0, 15, 0, 10),
+			Size = UDim2.new(1, -20, 0, 20),
+			Font = Enum.Font.GothamBold,
+			Text = title,
+			TextColor3 = Theme.Text,
+			TextSize = 14,
+			TextXAlignment = Enum.TextXAlignment.Left
+		})
+
+		Utility:Create("TextLabel", {
+			Parent = NotifFrame,
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0, 15, 0, 30),
+			Size = UDim2.new(1, -20, 0, 20),
+			Font = Enum.Font.Gotham,
+			Text = subtitle,
+			TextColor3 = Theme.SubText,
+			TextSize = 12,
+			TextXAlignment = Enum.TextXAlignment.Left
+		})
+
+		-- Slide In Animation
+		Utility:Tween(NotifFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)})
+
+		-- Wait for duration, then slide out and destroy
+		task.spawn(function()
+			task.wait(duration)
+			local OutTween = Utility:Tween(NotifFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = UDim2.new(1, 50, 0, 0)})
+			OutTween.Completed:Wait()
+			Holder:Destroy()
+		end)
+	end
+	
 	return Window
 end
 
